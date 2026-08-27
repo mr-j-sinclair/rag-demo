@@ -27,8 +27,18 @@ jobs:
         # Install the exact dependencies recorded in uv.lock
         run: uv sync --locked
 
+      - name: Restore embedding model cache
+        # Resue the model downloaded by an earlier CI run.
+        id: embedding-model-cache
+        uses: actions/cache@v4
+        with:
+          path: models/all-MiniLM-L6-v2
+          key: embedding-model-all-MiniLM-L6-v2-v1
+
       - name: Download embedding model
         # Download the model from Hugging Face
+        # Only if it cannot be retrieved from cache.
+        if: steps.embedding-model-cache.outputs.cache-hit != 'true'
         run: uv run hf download sentence-transformers/all-MiniLM-L6-v2 --local-dir models/all-MiniLM-L6-v2
 
       - name: Lint
