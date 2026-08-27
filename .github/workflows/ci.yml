@@ -25,7 +25,11 @@ jobs:
 
       - name: Install dependencies
         # Install the exact dependencies recorded in uv.lock
-        run: uv sync --locked 
+        run: uv sync --locked
+
+      - name: Download embedding model
+        # Download the model from Hugging Face
+        run: uv run hf download sentence-transformers/all-MiniLM-L6-v2 --local-dir models/all-MiniLM-L6-v2
 
       - name: Lint
         # Check all Python files for code-quality problems.
