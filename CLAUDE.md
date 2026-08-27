@@ -268,13 +268,34 @@ needing this conversation. Keep those files in sync if a chapter's guidance chan
       back on `main`, up to date with `origin/main`, clean working tree. Minor non-blocking loose
       end: local `readme-change-fastapi` branch still exists locally post-merge (`git branch -d
       readme-change-fastapi` to clean up, whenever).
-- [ ] **Chapter 4 — Basic CI**: `.github/workflows/ci.yml` — checkout/setup-python/uv
-      sync/ruff/pytest. Not started.
+- [x] **Chapter 4 — Basic CI**: `.github/workflows/ci.yml` implemented and verified — assistant
+      confirmed via `gh run list` (latest run on `main`, triggered by the merge: `success`, 1m8s)
+      and read the actual workflow file. Triggers on `push`/`pull_request` to `main`.
+      Steps: `actions/checkout@v4` → `astral-sh/setup-uv@v6` → `uv sync --locked` →
+      `actions/cache@v4` restore/save for the embedding model → download from HF Hub
+      (`sentence-transformers/all-MiniLM-L6-v2`) only on cache miss → `ruff check .` →
+      `uv run pytest`. `ruff` added as a dev dependency (`pyproject.toml`). Real (unplanned)
+      failure-then-fix arc replaced the plan's artificial "break a test" exercise: first CI run
+      failed for real (`e2f6569`) because `models/all-MiniLM-L6-v2` is gitignored — a fresh
+      runner has no local copy, so `HuggingFaceEmbeddings` had nothing to load. Fixed by
+      downloading the model from the HF Hub in CI (`a5a7e98`), then added the cache step so it's
+      not re-downloaded every run (`a3fff0e`). Merged via PR #2 (`ci_setup` branch → `main`,
+      commit `ccfee60`). Notable: this is the same root-cause/fix-direction (local gitignored
+      model → HF Hub id) that Chapter 5 was already going to raise for the Docker build — should
+      make that chapter faster since the pattern's now familiar.
 - [ ] **Chapter 5 — Docker + Cloud Run**: GCP project setup, `Dockerfile`, switch embeddings to
       HF Hub id (drop local gitignored model-folder dependency), CPU-only torch, manual first
-      deploy. Not started.
+      deploy. **Build approach changed 2026-08-27, before starting**: image is built remotely
+      via Cloud Build (`cloudbuild.yaml` + `gcloud builds submit`), not locally — no Docker
+      Desktop on this laptop at all (low-power Intel Air; assistant pushed back that this
+      machine's x86_64, so it wouldn't hit the usual Apple-Silicon emulation tax, but the
+      user's reasoning still held and Cloud Build was chosen). Full rationale/pros-cons in the
+      plan file. Not started.
 - [ ] **Chapter 6 — Basic CD**: workflow extension, Workload Identity Federation auth from
-      GitHub Actions to GCP, auto-deploy on merge to `main`. Not started.
+      GitHub Actions to GCP, auto-deploy on merge to `main`. **Build step changed 2026-08-27**
+      to match Ch5: CD triggers Cloud Build (reusing Ch5's `cloudbuild.yaml`) rather than the
+      Actions runner running `docker build` itself — one build mechanism, not two. Deploy
+      service account roles updated accordingly (added Cloud Build Editor). Not started.
 - [ ] **Chapter 7 — Real feature via the workflow**: hybrid retrieval (`EnsembleRetriever` +
       `BM25Retriever`), built entirely through branch → PR → CI → merge → CD. Not started.
 - [ ] **Chapter 8 — Quality/review/docs**: real `ruff` config, branch protection + required
@@ -343,8 +364,26 @@ needing this conversation. Keep those files in sync if a chapter's guidance chan
   commits to: initial commit, public GitHub repo (`mr-j-sinclair/rag-demo`), and a full
   feature-branch → PR → squash-merge cycle practiced for real (PR #1). `.DS_Store`/`ignore.md`
   gitignored per user's decision (left on disk, not committed). Verified via actual `git`/`gh`
-  state, not user report. See Chapter 3 checklist entry for full detail. Chapter 3 done. Chapter 4
-  (Basic CI — `.github/workflows/ci.yml`) not yet started.
+  state, not user report. See Chapter 3 checklist entry for full detail. Chapter 3 done. Later
+  same day, user asked to stop tracking `chapters/` in Git (already pushed since the initial
+  commit) since it's internal Codex-handoff content, not project docs — decided to untrack going
+  forward rather than purge from history (user's call, no force-push needed); gitignored, files
+  kept on local disk, committed as `b3cfd9e` and pushed. Then Chapter 4 (Basic CI) taught and
+  completed same day — see Chapter 4 checklist entry for the real failure-then-fix arc (gitignored
+  embedding model broke the first CI run for real; fixed by downloading from HF Hub + caching).
+  Verified via `gh run list` showing a real green run on `main`. Chapter 4 done. Before
+  starting Chapter 5, user asked whether the plan had the Docker image built locally or
+  remotely, citing the laptop's weak hardware (Intel i7 @ 1.2GHz, 16GB). Assistant pushed
+  back with one correction (the machine is x86_64 so it wouldn't hit the Apple-Silicon
+  emulation tax that usually explains "Docker is slow on my Mac") but agreed the user's
+  underlying goal was sound, especially since Ch6's automated build was already headed
+  server-side regardless. User decided: full Cloud Build (`cloudbuild.yaml`), no local
+  Docker at all, and Ch6's CD build should match (Cloud Build via `gcloud builds submit`
+  instead of the Actions runner running `docker build` itself) for one consistent build
+  mechanism. Plan file (`/Users/sinclairmacbook/.claude/plans/iridescent-hatching-squirrel.md`)
+  updated accordingly for both chapters, including the WIF service account roles (added
+  Cloud Build Editor). Chapter 5 not yet started — will begin with GCP
+  project/billing/API setup (now including the Cloud Build API) per the updated plan.
 
 ## Resuming a session
 

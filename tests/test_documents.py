@@ -11,5 +11,5 @@ def test_load_documents_from_data_folder():
     # collect every source filename stored in the document metadata
     sources = [document.metadata["source"] for document in documents]
 
-    # Confirm that ta know data file was loaded correctly 
+    # Confirm that the know data file was loaded correctly
     assert "adalovelace.txt" in sources

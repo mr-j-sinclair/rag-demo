@@ -1,0 +1,29 @@
+# Local virtual environment is macOS-specific.
+.venv/
+
+# Git history and automation configuration aren't runtime files.
+.git/
+.github/
+
+# Local caches and compiled Python files.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Tests and course material aren't needed by Cloud Run.
+tests/
+chapters/
+CLAUDE.md
+AGENTS.md
+ignore.md
+
+# Never copy secrets into an image.
+.env
+.env.*
+
+# Exclude the large local model; the Dockerfile downloads its own copy.
+models/
+
+# macOS metadata.
+.DS_Store

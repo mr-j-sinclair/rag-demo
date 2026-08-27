@@ -10,7 +10,8 @@ from rag_demo.documents import load_documents
 
 class KnowledgeBase:
     def __init__(self,
-                 model_path = "models/all-MiniLM-L6-v2",
+                 # Public Hugging Face Model ID.
+                 model_path = "sentence-transformers/all-MiniLM-L6-v2",
                  chunk_size: int = 500, 
                  chunk_overlap: int = 100
                 ):

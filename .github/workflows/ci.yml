@@ -32,8 +32,8 @@ jobs:
         id: embedding-model-cache
         uses: actions/cache@v4
         with:
-          path: models/all-MiniLM-L6-v2
-          key: embedding-model-all-MiniLM-L6-v2-v1
+          path: ~/.cache/huggingface/hub
+          key: embedding-model-all-MiniLM-L6-v2-v2
 
       - name: Download embedding model
         # Download the model from Hugging Face
