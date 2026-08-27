@@ -1,0 +1,39 @@
+# LangChain
+
+*From Wikipedia, the free encyclopedia*
+
+| **Developer** | Harrison Chase |
+| --- | --- |
+| **Release** | October 2022 |
+| **Written in** | Python and JavaScript |
+| **Type** | Software framework for large language model application development |
+| **License** | MIT License |
+| **Website** | [LangChain.com](https://LangChain.com) |
+| **Repository** | [github.com/langchain-ai/langchain](https://github.com/langchain-ai/langchain) |
+
+LangChain is a software framework that helps facilitate the integration of large language models (LLMs) into applications. As a language model integration framework, LangChain's use-cases largely overlap with those of language models in general, including document analysis and summarization, chatbots, and code analysis.[2]
+
+* In the third quarter of 2023, the **LangChain Expression Language (LCEL)** was introduced, which provides a declarative way to define chains of actions.[5][6]
+* In October 2023, LangChain introduced **LangServe**, a deployment tool to host LCEL code as a production-ready API.[7]
+* In February 2024, LangChain released **LangSmith**, a closed-source observability and evaluation platform for LLM applications, and announced a US $25 million Series A led by Sequoia Capital.[8]
+* On 14 May 2025, the company launched **LangGraph Platform** into general availability, providing managed infrastructure for deploying long-running, stateful AI agents.[9]
+* In April 2025, LangChain was featured in the *Forbes AI 50* list.[10]
+
+---
+
+## Capabilities
+
+LangChain's developers highlight the framework's applicability to use-cases including chatbots,[11] retrieval-augmented generation,[12] document summarization,[13] and synthetic data generation.[14] *InfoWorld* described LangChain as a software development kit that simplifies the connection between large language models and external applications through a unified API.[15] The magazine also wrote that it can be used to bring in context from sources such as PDFs, web pages, CSV files and relational databases, while making it easier for developers to change the underlying model without major code changes.[15]
+
+As of March 2023, LangChain included integrations with systems including:
+
+* **Cloud Storage & Services:** Amazon, Google, and Microsoft Azure cloud storage.[16]
+* **APIs & Web Search:** API wrappers for news, movie information, and weather; Google Search and Microsoft Bing web search;[17] Python RequestsWrapper and other methods for API requests; WolframAlpha website and SDK.[20]
+* **Language Models:** OpenAI, Anthropic, and Hugging Face language models.
+* **Vector Databases & Caching:** Milvus vector database[18] to store and retrieve vector embeddings; Weaviate vector database[19] to cache embedding and data objects; Redis cache database storage.
+* **Databases:** SQL and NoSQL databases, including JSON support.
+* **Document & Data Processing:** PyPDF, pdfminer, fitz, and pymupdf for PDF file text extraction and manipulation; Google Drive documents, spreadsheets, and presentations summarization, extraction, and creation; iFixit repair guides and wikis search and summarization; multiple web scraping subsystems and templates.
+* **Code & Execution:** Bash for summarization, syntax/semantics checking, and shell script execution; Python and JavaScript code generation, analysis, and debugging; finding and summarizing "todo" tasks in code.
+* **Utilities & UI:** Few-shot learning prompt generation support; MapReduce for question answering, combining documents, and question generation; N-gram overlap scoring; Streamlit (including logging); text mapping for k-nearest neighbors search; time zone conversion and calendar operations; tracing and recording stack symbols in threaded and asynchronous subprocess runs.
+
+As of April 2023, it can read from more than 50 document types and data sources.[21]
