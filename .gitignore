@@ -19,3 +19,6 @@ models/all-MiniLM-L6-v2
 
 # Personal scratch notes
 ignore.md
+
+# Per-chapter teaching content for Codex handoff (internal, not project docs)
+chapters/
