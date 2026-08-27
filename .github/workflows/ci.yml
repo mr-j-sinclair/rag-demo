@@ -39,7 +39,7 @@ jobs:
         # Download the model from Hugging Face
         # Only if it cannot be retrieved from cache.
         if: steps.embedding-model-cache.outputs.cache-hit != 'true'
-        run: uv run hf download sentence-transformers/all-MiniLM-L6-v2 --local-dir models/all-MiniLM-L6-v2
+        run: uv run hf download sentence-transformers/all-MiniLM-L6-v2
 
       - name: Lint
         # Check all Python files for code-quality problems.
