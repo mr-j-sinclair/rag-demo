@@ -283,14 +283,47 @@ needing this conversation. Keep those files in sync if a chapter's guidance chan
       commit `ccfee60`). Notable: this is the same root-cause/fix-direction (local gitignored
       model → HF Hub id) that Chapter 5 was already going to raise for the Docker build — should
       make that chapter faster since the pattern's now familiar.
-- [ ] **Chapter 5 — Docker + Cloud Run**: GCP project setup, `Dockerfile`, switch embeddings to
-      HF Hub id (drop local gitignored model-folder dependency), CPU-only torch, manual first
-      deploy. **Build approach changed 2026-08-27, before starting**: image is built remotely
-      via Cloud Build (`cloudbuild.yaml` + `gcloud builds submit`), not locally — no Docker
-      Desktop on this laptop at all (low-power Intel Air; assistant pushed back that this
-      machine's x86_64, so it wouldn't hit the usual Apple-Silicon emulation tax, but the
-      user's reasoning still held and Cloud Build was chosen). Full rationale/pros-cons in the
-      plan file. Not started.
+- [x] **Chapter 5 — Docker + Cloud Run** (COMPLETE 2026-08-27): **Build approach changed 2026-08-27,
+      before starting**: image is built remotely via Cloud Build (`cloudbuild.yaml` +
+      `gcloud builds submit`), not locally — no Docker Desktop on this laptop at all (low-power
+      Intel Air; assistant pushed back that this machine's x86_64, so it wouldn't hit the usual
+      Apple-Silicon emulation tax, but the user's reasoning still held and Cloud Build was
+      chosen). Full rationale/pros-cons in the plan file and `chapters/chapter-05-docker-cloudrun.md`.
+      - [x] **Step 1 — GCP project setup**: done, verified independently via `gcloud projects
+            describe`/`gcloud billing projects describe`/`gcloud services list --enabled`.
+            Project `langchain-rag-example` (user deliberately chose this over the suggested
+            `rag-demo-cicd` — public-facing, intended to scale beyond a course exercise, "demo"
+            was the wrong name). Billing linked, Cloud Run + Artifact Registry + Cloud Build APIs
+            enabled.
+      - [x] **Step 2 — `Dockerfile` + `.dockerignore` + the two deliberate challenges**: done,
+            reviewed in detail (not just skimmed). Correct uv Docker layer-caching pattern;
+            embedding model pre-downloaded at build time. Challenge (a): `KnowledgeBase`'s
+            `model_path` switched from the local gitignored folder to the HF Hub id
+            `sentence-transformers/all-MiniLM-L6-v2`. Challenge (b): CPU-only torch via
+            `pyproject.toml` `[tool.uv.sources]`/`[[tool.uv.index]]`, scoped to Linux only —
+            verified for real via `uv lock --check` (lockfile resolves `torch==2.2.2+cpu` on
+            Linux/x86_64, unaffected on macOS). Found and helped fix a real regression: the
+            Hub-id switch broke Chapter 4's CI caching (`ci.yml` was still targeting
+            `models/all-MiniLM-L6-v2`, a path nothing reads anymore) — fixed in two verified
+            passes against real Actions runs, final state confirmed via run `33091840010`:
+            `Cache hit for: embedding-model-all-MiniLM-L6-v2-v2`, download step correctly
+            skipped, all tests + lint pass. See the chapter file for full detail.
+      - [x] **Step 3 — `cloudbuild.yaml`**: done, verified via `gcloud builds list` (build
+            `78d1f731...`, `SUCCESS`, 3m31s) and `gcloud artifacts docker images list`
+            (`.../rag-demo/api:latest` confirmed present, ~1.2GB). Repo `rag-demo` created in
+            `europe-west2` (region chosen over `us-central1` — UK-based user/audience).
+      - [x] **Step 4 — manual `gcloud run deploy` + verification**: done. Real debugging
+            moment along the way: revision `00002` (512Mi/1 CPU) failed with a container
+            startup health-check timeout while the *identical* config on revision `00001` had
+            succeeded — consistent with running right at a resource ceiling. Bumped to 1Gi
+            (revision `00003`), which fixed it reliably. Verified independently (not just
+            from user-pasted terminal output): live URL
+            `https://rag-demo-api-j5o6qpnbta-nw.a.run.app`, `Ready` condition `True`,
+            `GET /health` → `{"status":"ok"}`, `POST /query` returns a real, correct,
+            context-grounded Ada Lovelace answer from the actual deployed service.
+      **Chapter 5 complete.** GCP project live, image builds via Cloud Build only (no local
+      Docker used at any point), image in Artifact Registry, FastAPI app running on a real
+      public HTTPS Cloud Run URL.
 - [ ] **Chapter 6 — Basic CD**: workflow extension, Workload Identity Federation auth from
       GitHub Actions to GCP, auto-deploy on merge to `main`. **Build step changed 2026-08-27**
       to match Ch5: CD triggers Cloud Build (reusing Ch5's `cloudbuild.yaml`) rather than the
@@ -384,6 +417,23 @@ needing this conversation. Keep those files in sync if a chapter's guidance chan
   updated accordingly for both chapters, including the WIF service account roles (added
   Cloud Build Editor). Chapter 5 not yet started — will begin with GCP
   project/billing/API setup (now including the Cloud Build API) per the updated plan.
+  Later same day, user also asked for `chapters/chapter-06-basic-cd.md` to be created ahead
+  of that chapter's actual teaching, containing just a design-decision record (options +
+  pros/cons for Ch6's build path) — done. Then Chapter 5 taught and completed end-to-end,
+  same day, in 4 verified steps: (1) GCP project setup — project `langchain-rag-example`
+  (deliberately renamed from the suggested `rag-demo-cicd` by the user — public-facing,
+  meant to scale beyond a course exercise), billing linked, APIs enabled; (2) `Dockerfile` +
+  `.dockerignore` + both deliberate challenges (HF Hub embeddings id, CPU-only torch via
+  `pyproject.toml`) — found and fixed a real regression this introduced in Chapter 4's CI
+  caching, verified via real Actions runs; (3) Artifact Registry repo (`rag-demo`,
+  `europe-west2` — chosen over `us-central1` for a UK-based user/audience) + `cloudbuild.yaml`
+  — real Cloud Build run verified `SUCCESS`, image confirmed present in the registry;
+  (4) manual `gcloud run deploy` — hit and fixed a real resource-sizing issue (a revision
+  failed a container-startup health check at 512Mi/1 CPU, an identical prior revision had
+  succeeded at the same config; bumping to 1Gi fixed it reliably), then verified the live
+  Cloud Run URL directly (not just from user-pasted output): `/health` OK, `/query` returns a
+  correct, context-grounded answer. **Chapter 5 complete.** Full detail for every step in
+  `chapters/chapter-05-docker-cloudrun.md`. Chapter 6 (Basic CD) not yet started.
 
 ## Resuming a session
 

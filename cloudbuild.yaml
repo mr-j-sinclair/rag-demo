@@ -1,0 +1,6 @@
+steps:
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["build", "-t","europe-west2-docker.pkg.dev/langchain-rag-example/rag-demo/api:latest", "."]
+
+images: 
+  - "europe-west2-docker.pkg.dev/langchain-rag-example/rag-demo/api:latest"
