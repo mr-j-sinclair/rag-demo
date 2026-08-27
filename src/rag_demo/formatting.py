@@ -1,5 +1,6 @@
 from langchain_core.documents import Document
 
+
 def format_docs(docs: list[Document]) -> str:
     """
     Turn retrieved Documents into a single string for the prompt's {context}
@@ -10,8 +11,8 @@ def format_docs(docs: list[Document]) -> str:
     return string_formatted_docs
 
 if __name__ == "__main__":
+
     from rag_demo.knowledge_base import KnowledgeBase
-    from pprint import pprint
 
     kb = KnowledgeBase()
 

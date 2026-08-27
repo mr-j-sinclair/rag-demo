@@ -256,8 +256,18 @@ needing this conversation. Keep those files in sync if a chapter's guidance chan
       dependency injection with no changes needed. Two harmless comment typos noted, not fixed
       (user's call, same as the Chapter 1 precedent): `test_pipeline.py:19` "RAGPipleline",
       `test_documents.py:13` "ta know data file".
-- [ ] **Chapter 3 — Git/GitHub**: first commit (repo currently has zero commits), `.DS_Store`/
-      `ignore.md` cleanup decision, GitHub repo + push, feature-branch/PR practice run. Not started.
+- [x] **Chapter 3 — Git/GitHub**: complete, verified via `gh`/`git` state (not just user report).
+      Decision: `.DS_Store` (all 3 instances) and `ignore.md` both added to `.gitignore` and left
+      on disk, not committed (user's call). Initial commit `df36fc8` ("Initial commit: RAG
+      pipeline, FastAPI, tests"). Public repo created at
+      `https://github.com/mr-j-sinclair/rag-demo` via `gh repo create --source=. --remote=origin`,
+      pushed with `git push -u origin main`. Feature-branch practice run: branch
+      `readme-change-fastapi` → README tweak → commit → push → `gh pr create --fill` (assistant ran
+      this one directly, at the user's explicit instruction) → PR #1 → `gh pr merge --squash` →
+      merged commit `1d0a33a` on `main`, confirmed via `gh pr view 1` (`state: MERGED`). Local repo
+      back on `main`, up to date with `origin/main`, clean working tree. Minor non-blocking loose
+      end: local `readme-change-fastapi` branch still exists locally post-merge (`git branch -d
+      readme-change-fastapi` to clean up, whenever).
 - [ ] **Chapter 4 — Basic CI**: `.github/workflows/ci.yml` — checkout/setup-python/uv
       sync/ruff/pytest. Not started.
 - [ ] **Chapter 5 — Docker + Cloud Run**: GCP project setup, `Dockerfile`, switch embeddings to
@@ -328,7 +338,13 @@ needing this conversation. Keep those files in sync if a chapter's guidance chan
 - **2026-08-26**: Chapter 2 (testing) implemented (likely with Codex) and verified — assistant
   read all 4 test files and ran `uv run pytest -v` independently, all pass. See Chapter 2
   checklist entry for detail, incl. the stub-LLM design decision for `test_pipeline.py`. Chapter 2
-  done. Chapter 3 (Git/GitHub — first commit, repo still has zero commits) not yet started.
+  done.
+- **2026-08-27**: Chapter 3 (Git/GitHub) taught and completed same day — repo went from zero
+  commits to: initial commit, public GitHub repo (`mr-j-sinclair/rag-demo`), and a full
+  feature-branch → PR → squash-merge cycle practiced for real (PR #1). `.DS_Store`/`ignore.md`
+  gitignored per user's decision (left on disk, not committed). Verified via actual `git`/`gh`
+  state, not user report. See Chapter 3 checklist entry for full detail. Chapter 3 done. Chapter 4
+  (Basic CI — `.github/workflows/ci.yml`) not yet started.
 
 ## Resuming a session
 

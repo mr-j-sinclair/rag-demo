@@ -1,5 +1,6 @@
 from rag_demo.knowledge_base import KnowledgeBase
 
+
 def test_retriever_finds_ada_lovelace_document():
     # build a knowledge base using the local embedding model
     knowledge_base = KnowledgeBase()

@@ -1,5 +1,7 @@
 from langchain_core.documents import Document
-from rag_demo.formatting import format_docs 
+
+from rag_demo.formatting import format_docs
+
 
 def test_format_docs_joins_page_content():
     documents = [

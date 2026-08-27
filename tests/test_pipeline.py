@@ -1,8 +1,9 @@
 from langchain_core.documents import Document
 from langchain_core.messages import AIMessage
-from langchain_core.runnables import RunnableLambda 
+from langchain_core.runnables import RunnableLambda
 
 from rag_demo.pipeline import RAGPipeline
+
 
 def test_ask_uses_context_and_returns_llm_response():
     # Store the prompt received by the stub LLM so we can inspect it later

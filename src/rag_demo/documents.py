@@ -1,6 +1,7 @@
 from pathlib import Path
+
 from langchain_core.documents import Document
-from pprint import pprint
+
 
 def load_documents(folder_path: str) -> list[Document]:
     """

@@ -1,13 +1,13 @@
+from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
-from rag_demo.formatting import format_docs
-from langchain_core.runnables import(
+from langchain_core.runnables import (
     RunnableLambda,
     RunnableParallel,
-    RunnablePassthrough
+    RunnablePassthrough,
 )
 from langchain_openai import ChatOpenAI
-from langchain_core.output_parsers import StrOutputParser
 
+from rag_demo.formatting import format_docs
 
 
 class RAGPipeline: 
@@ -62,9 +62,11 @@ class RAGPipeline:
 if __name__ == "__main__":
     # Test running everything end to end
 
-    from dotenv import load_dotenv
-    from rag_demo.knowledge_base import KnowledgeBase
     from pprint import pprint
+
+    from dotenv import load_dotenv
+
+    from rag_demo.knowledge_base import KnowledgeBase
 
     load_dotenv()
         

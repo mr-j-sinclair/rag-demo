@@ -1,4 +1,4 @@
-from dotenv import load_dotenv, find_dotenv
+from dotenv import find_dotenv, load_dotenv
 from langchain_openai import ChatOpenAI
 
 from rag_demo.knowledge_base import KnowledgeBase

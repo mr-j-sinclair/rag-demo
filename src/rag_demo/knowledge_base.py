@@ -1,9 +1,12 @@
-from langchain_core.documents import Document
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_core.vectorstores import InMemoryVectorStore
-from rag_demo.documents import load_documents
 from pprint import pprint
+
+from langchain_core.documents import Document
+from langchain_core.vectorstores import InMemoryVectorStore
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+from rag_demo.documents import load_documents
+
 
 class KnowledgeBase:
     def __init__(self,
@@ -32,7 +35,7 @@ class KnowledgeBase:
         documents = load_documents(folder_path)
 
         if not documents:
-            return None
+            return
         
         chunks = self.split_documents(documents)
 
@@ -101,6 +104,6 @@ manual way (call kb.vector_store.similarity_search() direct)
     print()
     print(f"[len(group) for group in results] = \n{[len(group) for group in results]}")
     print()
-    print(f"[[doc.metadata for doc in group] for group in results]")
+    print("[[doc.metadata for doc in group] for group in results]")
     pprint([[doc.metadata for doc in group] for group in results])
     print()

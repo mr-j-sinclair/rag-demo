@@ -1,14 +1,12 @@
-from fastapi import FastAPI, HTTPException, UploadFile
-from pydantic import BaseModel
-from dotenv import load_dotenv, find_dotenv
+from pathlib import Path
 
+from dotenv import find_dotenv, load_dotenv
+from fastapi import FastAPI, HTTPException, UploadFile
 from langchain_openai import ChatOpenAI
+from pydantic import BaseModel
 
 from rag_demo.knowledge_base import KnowledgeBase
 from rag_demo.pipeline import RAGPipeline
-
-from pathlib import Path
-
 
 app = FastAPI()
 
