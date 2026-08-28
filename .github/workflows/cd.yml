@@ -1,0 +1,47 @@
+name: CD
+
+# Deploy only when changes land on the main branch.
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  # Allow the workflow to read the repository.
+  contents: read
+
+  # Allow GitHub to create the short-lived identity token used by WIF.
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        # Download the repository onto the temporary GitHub runner.
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        # Exchange GitHub's temporary OIDC token for temporary GCP credentials.
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud CLI
+        # Install and configure the gcloud command-line tools on the runner.
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Build and push image via Cloud Build
+        # Send this repository to Cloud Build, which follows cloudbuild.yaml.
+        run: gcloud builds submit --config cloudbuild.yaml .
+
+      - name: Deploy to Cloud Run
+        # Deploy the newly built image and provide the API key securely.
+        run: |
+          gcloud run deploy rag-demo-api \
+            --image="europe-west2-docker.pkg.dev/langchain-rag-example/rag-demo/api:latest" \
+            --region="europe-west2" \
+            --allow-unauthenticated \
+            --set-env-vars="OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}"
