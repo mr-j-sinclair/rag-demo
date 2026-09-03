@@ -324,13 +324,54 @@ needing this conversation. Keep those files in sync if a chapter's guidance chan
       **Chapter 5 complete.** GCP project live, image builds via Cloud Build only (no local
       Docker used at any point), image in Artifact Registry, FastAPI app running on a real
       public HTTPS Cloud Run URL.
-- [ ] **Chapter 6 — Basic CD**: workflow extension, Workload Identity Federation auth from
-      GitHub Actions to GCP, auto-deploy on merge to `main`. **Build step changed 2026-08-27**
-      to match Ch5: CD triggers Cloud Build (reusing Ch5's `cloudbuild.yaml`) rather than the
-      Actions runner running `docker build` itself — one build mechanism, not two. Deploy
-      service account roles updated accordingly (added Cloud Build Editor). Not started.
-- [ ] **Chapter 7 — Real feature via the workflow**: hybrid retrieval (`EnsembleRetriever` +
-      `BM25Retriever`), built entirely through branch → PR → CI → merge → CD. Not started.
+- [x] **Chapter 6 — Basic CD (COMPLETE 2026-08-28)**: all 3 steps implemented and
+      independently verified, not just taken on the user's report. Step 1 (WIF pool +
+      provider + `github-deployer` service account + 4 IAM roles + federation binding):
+      verified via `gcloud iam workload-identity-pools describe`/`providers describe`/
+      `service-accounts describe`/`projects get-iam-policy`/`service-accounts
+      get-iam-policy` — pool and provider `ACTIVE`, attribute condition correctly scoped
+      to `mr-j-sinclair/rag-demo`, all 4 roles present (`run.admin`,
+      `artifactregistry.writer`, `cloudbuild.builds.editor`, `iam.serviceAccountUser`),
+      `roles/iam.workloadIdentityUser` binding scoped to the exact repo principalSet.
+      Step 2 (`gh secret`/`gh variable`): verified via `gh secret list`/`gh variable
+      list` — exactly `OPENAI_API_KEY` (secret) + `GCP_SERVICE_ACCOUNT` +
+      `GCP_WORKLOAD_IDENTITY_PROVIDER` (variables), nothing extra. Step 3
+      (`.github/workflows/cd.yml`): read the real file — correct WIF auth via
+      `google-github-actions/auth@v2` referencing `vars.*`, Cloud Build triggered via
+      `gcloud builds submit --config cloudbuild.yaml`, `gcloud run deploy` with
+      `OPENAI_API_KEY` sourced from `secrets.OPENAI_API_KEY` (no hardcoded key anywhere,
+      confirmed no JSON key files exist in the repo). Merged via PR #3 (`53ebb7a`) +
+      fixup `9053fa7` (suppressed Cloud Build log streaming). **Verification**: real
+      Actions run `33192544565` confirmed `success` (`deploy` job, 5m2s) via `gh run
+      view`; `gcloud run revisions list` shows active revision `rag-demo-api-00004-h6s`
+      deployed at `2026-08-28 17:21:46 UTC` **by `github-deployer@...iam.gserviceaccount.com`**
+      (not the user's own account — proof this was a genuine automated WIF deploy, not a
+      manual one); live `/health` → `{"status":"ok"}` and live `/query` (Ada Lovelace)
+      both hit fresh and correct. **Chapter 6 complete — no further stages within it.**
+- [ ] **Chapter 7 — Real feature via the workflow (TAUGHT 2026-09-03, awaiting
+      implementation)**: dense/sparse/hybrid retrieval, built entirely through branch →
+      PR → CI → merge → CD (no direct pushes to `main`).
+      `chapters/chapter-07-hybrid-retrieval.md` written, **design revised same day before
+      implementation started** — user asked (working with Codex in parallel) for explicit
+      flags for all three strategies, not hybrid-only as originally taught. Scope
+      question resolved via `AskUserQuestion`: flag lives on `KnowledgeBase` only
+      (`main.py`/`api.py` unchanged) — CLI/API-level exposure considered and deliberately
+      deferred to keep this chapter's surface matched to the branch→PR→CI→CD process
+      being taught. New deps identified and verified to resolve cleanly against the
+      pinned `langchain==1.3.15`: `langchain-classic` (`EnsembleRetriever`),
+      `langchain-community` (`BM25Retriever`), `rank-bm25` (BM25 scoring itself) — the
+      original course plan only anticipated `rank_bm25`; the other two are needed because
+      this project uses LangChain's newer modular v1 package split. Code change:
+      `KnowledgeBase.build_index` stores `self.chunks` (currently a local var, discarded
+      after building the vector store); `KnowledgeBase.as_retriever(k, mode="hybrid")`
+      gains a `mode` flag (`"dense"` / `"sparse"` / `"hybrid"`, default `"hybrid"` so
+      existing callers are unaffected), validates it (`ValueError` on anything else),
+      builds only what the requested mode needs, and only constructs the
+      `EnsembleRetriever` (equal 0.5/0.5 weights to start) for `"hybrid"`. Same
+      return-type contract regardless of mode, so `RAGPipeline`/`api.py`/`main.py` need
+      zero changes. Tests: extend (not duplicate) `tests/test_knowledge_base.py` — one
+      test per mode plus an invalid-mode `pytest.raises(ValueError)` case. Nothing
+      implemented or run yet.
 - [ ] **Chapter 8 — Quality/review/docs**: real `ruff` config, branch protection + required
       reviewers (Barry/Vitali), optional Makefile, full README rewrite. Not started.
 
@@ -434,6 +475,50 @@ needing this conversation. Keep those files in sync if a chapter's guidance chan
   Cloud Run URL directly (not just from user-pasted output): `/health` OK, `/query` returns a
   correct, context-grounded answer. **Chapter 5 complete.** Full detail for every step in
   `chapters/chapter-05-docker-cloudrun.md`. Chapter 6 (Basic CD) not yet started.
+- **2026-08-28**: Chapter 6 (Basic CD) taught — full content written to
+  `chapters/chapter-06-basic-cd.md` (session continued in the VS Code extension rather
+  than the terminal app; same tool, same memory/instruction files, no functional
+  difference). Covers: CI-vs-CD distinction, the WIF trust-flow diagram, all 6 `gcloud`
+  commands to create the Workload Identity Pool/Provider + `github-deployer` service
+  account + its 4 IAM role bindings + the pool-to-service-account federation binding,
+  `gh secret`/`gh variable` commands for `OPENAI_API_KEY` + the two WIF identifiers, and a
+  `.github/workflows/cd.yml` skeleton (TODOs left for the user, matching Chapter 4's
+  `ci.yml` skeleton style) triggered only on push to `main`. Nothing implemented or run
+  yet — awaiting the user to work through Step 1 (WIF setup) and report back. Step 1
+  completed and independently verified same day (see checklist entry) — all 6 `gcloud`
+  resources confirmed via direct `gcloud` inspection, not just user report. Then, later
+  the same day, Steps 2 and 3 were completed and reported by the user in one message
+  (secrets/variables set, `cd.yml` written, PR merged, a real CD run succeeded, live
+  endpoints verified). Independently re-verified all of it rather than trusting the
+  paste: read the actual `cd.yml`, confirmed `gh secret list`/`gh variable list`,
+  confirmed the real Actions run via `gh run view`, and — the strongest evidence —
+  confirmed via `gcloud run revisions list` that the live revision was deployed *by the
+  `github-deployer` service account*, not the user's own account, proving the automated
+  WIF path actually fired rather than a coincidental manual deploy. **Chapter 6 complete.**
+  Chapters 7 (hybrid retrieval feature) and 8 (quality/review/docs) remain in the course;
+  neither has been taught yet.
+- **2026-09-03**: Chapter 7 (hybrid retrieval) taught — full content written to
+  `chapters/chapter-07-hybrid-retrieval.md`. Investigated the real package layout before
+  writing anything down: confirmed `EnsembleRetriever`/`BM25Retriever` aren't reachable
+  through `langchain`/`langchain_community` as originally planned in this project's
+  pinned `langchain==1.3.15` — verified via a dry-run install
+  (`uv pip install --dry-run langchain-classic langchain-community rank-bm25`) that all
+  three resolve cleanly against the existing lockfile before committing to them in the
+  chapter file. Design: `KnowledgeBase.build_index` needs to retain `self.chunks` (a
+  small but real change to code the RAG course already finished) so `as_retriever` can
+  build a `BM25Retriever` from the same chunks the vector store was built from, then wrap
+  both retrievers in an `EnsembleRetriever` — return type/interface unchanged, so nothing
+  downstream (`RAGPipeline`, `api.py`, `main.py`) needs touching. This chapter is
+  explicitly process-graded (branch → PR → CI → review → merge → watch CD), not just
+  code-graded, per the original course plan. Nothing implemented yet — awaiting the user.
+  Later same day: user (coordinating with Codex on implementation) asked to change the
+  design from hybrid-only to explicit dense/sparse/hybrid flags. Asked a scoping
+  question via `AskUserQuestion` (flag on `KnowledgeBase` only vs. also `main.py` CLI
+  vs. also `api.py` /query param vs. all three) — user chose `KnowledgeBase`-only.
+  Updated `chapters/chapter-07-hybrid-retrieval.md` accordingly: `as_retriever(k,
+  mode="hybrid")` now validates `mode` and only builds the retriever(s) the requested
+  mode needs; tests extended to one-per-mode plus an invalid-mode `ValueError` case.
+  Still nothing implemented — this was a chapter-file/spec revision only.
 
 ## Resuming a session
 

@@ -32,3 +32,31 @@
 - Prefer bullets, sub-bullets, and small diagrams when they make difficult concepts clearer.
 - Review and debug the user's implementation after they try it.
 - Only edit files directly when the user explicitly asks Codex to do so.
+
+## Retrieval course guidance
+
+- When teaching or reviewing retrieval work, compare this repository's LangChain-based approach with the manual dense-retrieval implementation in `/Users/sinclairmacbook/code/ai-engineer-coding-task-uk`.
+  - Inspect both implementations and explain the equivalent stages and method calls, especially document loading/chunking, Hugging Face embedding generation, similarity search, and result selection.
+  - Make clear which work LangChain abstracts and which work the manual implementation performs directly.
+- Independently verify Claude Code's LangChain dependency and installation advice before recommending or running installation commands.
+  - First inspect the versions pinned in this repository's `pyproject.toml` and `uv.lock`.
+  - Search current official LangChain documentation and package/source information applicable to those pinned versions.
+  - Report objectively whether Claude's advice is correct, partially correct, outdated, or incorrect, including any uncertainty; do not disagree merely to offer an alternative.
+- Retrieval behavior must be explicitly selectable through flags or an equivalent clear configuration, with separate modes for:
+  - Dense retrieval using embeddings.
+  - Sparse retrieval using BM25.
+  - Hybrid retrieval combining dense and sparse results.
+- Ensure the selected retrieval mode is visible and testable; do not silently replace dense retrieval with hybrid retrieval as the only available path.
+- If requirements, version compatibility, flag behavior, or the comparison between implementations is unclear, state the confusion explicitly and ask the user before making a consequential assumption.
+
+## Formatting notes
+
+When outputting long amounts of text:
+
+- Use bullet points and sub-bullets rather than large paragraphs.
+  - Indent sub-bullets correctly.
+- Use correctly formatted Markdown, including code blocks and inline code where appropriate.
+- When the user asks to export a Markdown file:
+  - Include proper metadata fields, such as title, author, creation date, and modified date.
+  - Set the author to `Codex`.
+- Use ASCII flow diagrams or Mermaid diagrams where they help explain complex technical processes.
