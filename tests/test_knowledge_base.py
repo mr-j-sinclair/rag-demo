@@ -21,7 +21,7 @@ def test_dense_retriever_finds_ada_lovelace_document():
     assert "adalovelace.txt" in sources
 
 
-def test_sparse_retriever_finds_exact_distinctive_term():
+def test_sparse_retriever_finds_exact_distinctive_phrase():
     # Integration test using the real documents and BM25 implementation
     knowledge_base = KnowledgeBase()
     knowledge_base.build_index("data")
@@ -29,8 +29,8 @@ def test_sparse_retriever_finds_exact_distinctive_term():
     # Create a  retriever that returns the three closest chunks
     retriever = knowledge_base.as_retriever(k=3, mode="sparse")
 
-    # Search BM25 using an exact term from the Ada Lovelace document.
-    documents = retriever.invoke("Flyology")
+    # use two exact tokens that occur together in the Ada lovelace document
+    documents = retriever.invoke("Bernoulli numbers")
 
     # Extract the source filename from each retrieved document
     sources = [document.metadata["source"] for document in documents]
