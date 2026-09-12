@@ -1,5 +1,7 @@
 from pprint import pprint
 
+from langchain_classic.retrievers import EnsembleRetriever
+from langchain_community.retrievers import BM25Retriever
 from langchain_core.documents import Document
 from langchain_core.vectorstores import InMemoryVectorStore
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -37,26 +39,50 @@ class KnowledgeBase:
 
         if not documents:
             return
-        
-        chunks = self.split_documents(documents)
 
+        # Keep the chunks on this KnowledgeBase instance so both the
+        # dense vector store and the sparse BM25 retriever can use them.
+        self.chunks = self.split_documents(documents)
 
         self.vector_store = InMemoryVectorStore.from_documents(
-            documents = chunks,
+            documents = self.chunks,
             embedding = self.embeddings,
         )
 
-    def as_retriever(self, k: int=5):
-        """Return a retriever configured to return the top-k documents."""
-        # Call self.vector_store.as_retriever(...)
+    def as_retriever(self, k: int = 5, mode: str = "hybrid"):
+        """Return a dense, sparse, or hybrid retriever."""
 
-        retriever = self.vector_store.as_retriever(
-            search_kwargs = {
-                "k":k
-            }
+        # Reject unsupported modes before constructing any retrievers
+        valid_modes = {"dense", "sparse", "hybrid"}
+
+        if mode not in valid_modes:
+            raise ValueError(
+                f"Invalid retrieval mode {mode!r}. Expected one of: "
+                "'dense', 'sparse', or 'hybrid'."
+            )
+
+        # Dense retrieval embeds the query and compares it with chunk embeddings.
+        if mode in {"dense", "hybrid"}:
+            dense_retriever = self.vector_store.as_retriever(
+                search_kwargs={"k": k}
+            )
+
+        # Sparse retrieval indexes and matches literal terms using BM25.
+        if mode in {"sparse", "hybrid"}:
+            sparse_retriever = BM25Retriever.from_documents(self.chunks)
+            sparse_retriever.k = k
+
+        if mode == "dense":
+            return dense_retriever
+
+        if mode == "sparse":
+            return sparse_retriever
+
+        # Hybrid mode combines both ranked lists using equal starting weights.
+        return EnsembleRetriever(
+            retrievers=[dense_retriever, sparse_retriever],
+            weights=[0.5, 0.5],
         )
-
-        return retriever
 
 
 if __name__ == "__main__":
