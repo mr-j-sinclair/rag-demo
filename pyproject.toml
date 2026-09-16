@@ -47,3 +47,16 @@ url = "https://download.pytorch.org/whl/cpu"
 
 # prevent unrelated packages from being downloaded from this specialist index.
 explicit = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "I",
+    "UP",
+    "B"
+]

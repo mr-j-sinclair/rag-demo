@@ -125,7 +125,11 @@ def delete_document(passed_in_filename: str):
     if filename != passed_in_filename:
         raise HTTPException(
             status_code=400, 
-            detail=f"invalid filename '{passed_in_filename}'. Use a plain filename like 'example_file.txt'")
+            detail=(
+                f"invalid filename '{passed_in_filename}'. "
+                "Use a plain filename like 'example_file.txt'"
+            )
+        )
 
     # Reject empty or suspicious file names
     if not filename or filename in (".", "..", "..."):
@@ -139,7 +143,10 @@ def delete_document(passed_in_filename: str):
     target = Path("data") / filename
     # If target.is_file() is False, raise HTTP 404.
     if not target.is_file():
-        raise HTTPException(status_code=404, detail=f"That file '{filename}' doesn't exist on the server")
+        raise HTTPException(
+            status_code=404, 
+            detail=f"That file '{filename}' doesn't exist on the server"
+        )
     
     # Delete it using target.unlink
     target.unlink()
