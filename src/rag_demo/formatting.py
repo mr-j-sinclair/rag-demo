@@ -6,12 +6,11 @@ def format_docs(docs: list[Document]) -> str:
     Turn retrieved Documents into a single string for the prompt's {context}
     """
     page_contents = [doc.page_content for doc in docs]
-    string_formatted_docs = "\n\n".join(page_contents)
 
-    return string_formatted_docs
+    return "\n\n".join(page_contents)
+
 
 if __name__ == "__main__":
-
     from rag_demo.knowledge_base import KnowledgeBase
 
     kb = KnowledgeBase()
@@ -29,4 +28,3 @@ if __name__ == "__main__":
     print(len(context))
 
     print(context)
-

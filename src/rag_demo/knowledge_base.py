@@ -11,19 +11,19 @@ from rag_demo.documents import load_documents
 
 
 class KnowledgeBase:
-    def __init__(self,
-                 # Public Hugging Face Model ID.
-                 model_path = "sentence-transformers/all-MiniLM-L6-v2",
-                 chunk_size: int = 500, 
-                 chunk_overlap: int = 100
-                ):
+    def __init__(
+        self,
+        # Public Hugging Face Model ID.
+        model_path="sentence-transformers/all-MiniLM-L6-v2",
+        chunk_size: int = 500,
+        chunk_overlap: int = 100,
+    ):
 
         self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=chunk_size,
-            chunk_overlap = chunk_overlap
+            chunk_size=chunk_size, chunk_overlap=chunk_overlap
         )
 
-        #construct HuggingFaceEmbeddings
+        # construct HuggingFaceEmbeddings
         self.embeddings = HuggingFaceEmbeddings(model_name=model_path)
 
     def split_documents(self, documents: list[Document]) -> list[Document]:
@@ -45,8 +45,8 @@ class KnowledgeBase:
         self.chunks = self.split_documents(documents)
 
         self.vector_store = InMemoryVectorStore.from_documents(
-            documents = self.chunks,
-            embedding = self.embeddings,
+            documents=self.chunks,
+            embedding=self.embeddings,
         )
 
     def as_retriever(self, k: int = 5, mode: str = "hybrid"):
@@ -56,16 +56,13 @@ class KnowledgeBase:
         valid_modes = {"dense", "sparse", "hybrid"}
 
         if mode not in valid_modes:
-            raise ValueError(
-                f"Invalid retrieval mode {mode!r}. Expected one of: "
-                "'dense', 'sparse', or 'hybrid'."
+            raise ValueError(  # noqa: TRY003
+                f"Invalid retrieval mode {mode!r}. Expected one of: 'dense', 'sparse', or 'hybrid'."
             )
 
         # Dense retrieval embeds the query and compares it with chunk embeddings.
         if mode in {"dense", "hybrid"}:
-            dense_retriever = self.vector_store.as_retriever(
-                search_kwargs={"k": k}
-            )
+            dense_retriever = self.vector_store.as_retriever(search_kwargs={"k": k})
 
         # Sparse retrieval indexes and matches literal terms using BM25.
         if mode in {"sparse", "hybrid"}:
@@ -107,23 +104,14 @@ if __name__ == "__main__":
         k=3,
     )
 
-    print(f"""
-
-using the retriever
+    print(f"""using the retriever
 {[doc.metadata for doc in docs]}
 
 manual way (call kb.vector_store.similarity_search() direct)
-{[doc.metadata for doc in manual_docs]}
-    
-    """
-    )
+{[doc.metadata for doc in manual_docs]}""")
 
     ## Try the runnables interface
-    results = retriever.batch([
-        "Tell me about Jupiter",
-        "What is Crispr?",
-        "Who was Ada Lovelace?"
-    ])
+    results = retriever.batch(["Tell me about Jupiter", "What is Crispr?", "Who was Ada Lovelace?"])
 
     print()
     print(f"type(results) = {type(results)}")

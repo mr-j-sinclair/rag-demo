@@ -25,36 +25,37 @@ retriever = kb.as_retriever(k=3)
 # Configure an AI model
 ai_model = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
-# Build a RAG pipeline 
+# Build a RAG pipeline
 rag_pipeline = RAGPipeline(
-    retriever = retriever,
-    llm = ai_model,
+    retriever=retriever,
+    llm=ai_model,
 )
+
 
 def rebuild_rag_pipeline() -> None:
     """Rebuild the index and replace the shared RAG pipeline"""
-    global rag_pipeline
+    global rag_pipeline  # noqa: PLW0603
 
     # Rebuild kb's vector store
     kb.build_index("data")
     # Create a new retriever
     retriever = kb.as_retriever(k=3)
     # Assign a new RAGPipeline to the shared rag_pipeline variable
-    rag_pipeline = RAGPipeline(
-        retriever = retriever,
-        llm = ai_model
-    )
+    rag_pipeline = RAGPipeline(retriever=retriever, llm=ai_model)
+
 
 class QueryRequest(BaseModel):
     question: str
 
+
 class QueryResponse(BaseModel):
     answer: str
+
 
 @app.get("/health")
 def health():
     """Confirm that the API process is running"""
-    
+
     return {"status": "ok"}
 
 
@@ -68,7 +69,9 @@ def query(request: QueryRequest):
     # Return a QueryResponse whose anwer contains the result
     return {"answer": ai_response}
 
+
 # GET /documents, POST /docuemnts, DELETE /documents/{filename} below
+
 
 @app.post("/documents")
 async def upload_documents(file: UploadFile):
@@ -104,31 +107,28 @@ def retrieve_documents():
     data_directory = Path("data")
 
     # Iterate through its contents
-    filenames = sorted(
-        this_file.name for this_file in data_directory.iterdir()
-        if this_file.is_file()
-    )
 
     # Return the filenames in the sorted order
-    return filenames
+    return sorted(this_file.name for this_file in data_directory.iterdir() if this_file.is_file())
+
 
 @app.delete("/documents/{passed_in_filename}")
 def delete_document(passed_in_filename: str):
     """Delete a document and rebuild the RAG pipeline"""
-    
+
     # Extract the safe filename using Path(filename.name)
     # Reject it with HTTP 400 if it differs from the supplied filename
-        
-        # Safely extract only the filename
+
+    # Safely extract only the filename
     filename = Path(passed_in_filename).name
 
     if filename != passed_in_filename:
         raise HTTPException(
-            status_code=400, 
+            status_code=400,
             detail=(
                 f"invalid filename '{passed_in_filename}'. "
                 "Use a plain filename like 'example_file.txt'"
-            )
+            ),
         )
 
     # Reject empty or suspicious file names
@@ -144,10 +144,9 @@ def delete_document(passed_in_filename: str):
     # If target.is_file() is False, raise HTTP 404.
     if not target.is_file():
         raise HTTPException(
-            status_code=404, 
-            detail=f"That file '{filename}' doesn't exist on the server"
+            status_code=404, detail=f"That file '{filename}' doesn't exist on the server"
         )
-    
+
     # Delete it using target.unlink
     target.unlink()
 
@@ -156,4 +155,3 @@ def delete_document(passed_in_filename: str):
 
     # Return a confirmation dictionary
     return {"status": f"okay - file '{filename}' has been deleted"}
-

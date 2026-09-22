@@ -1,5 +1,12 @@
 # Codex repository instructions
 
+## Persistent user preferences
+
+- As of 2026-09-16, the likely GitHub reviewer for Chapter 8 is Vitali,
+  username `VitaliLupusor` (`@VitaliLupusor`). The user said "probably", so this
+  remains tentative. Retain this across sessions; no invitation or review request
+  has been sent, and repository access has not yet been verified.
+
 ## Purpose
 
 - This is a learning repository.

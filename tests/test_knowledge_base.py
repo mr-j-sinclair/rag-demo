@@ -14,7 +14,7 @@ def test_dense_retriever_finds_ada_lovelace_document():
     # Search the vector store using a question about Ada Lovelace
     documents = retriever.invoke("Who was Ada Lovelace?")
 
-    # Extract the source filename from each retrieved document 
+    # Extract the source filename from each retrieved document
     sources = [document.metadata["source"] for document in documents]
 
     # At least one retrieved chunk should come from Ada's document
@@ -61,7 +61,5 @@ def test_retriever_rejects_invalid_mode():
     # Unit test: verify unsupported configuration fails clearly.
     knowledge_base = KnowledgeBase()
 
-    with pytest.raises(
-        ValueError, match="Invalid retrieval mode 'wrong'"
-    ):
+    with pytest.raises(ValueError, match="Invalid retrieval mode 'wrong'"):
         knowledge_base.as_retriever(mode="wrong")

@@ -17,26 +17,21 @@ def main():
     retriever = kb.as_retriever(k=3)
 
     # 4. construct a ChatOpenAI llm
-    ai_model = ChatOpenAI(model="gpt-4o-mini", temperature=0) 
+    ai_model = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
     # 5. construct a RAGPipleine(retriever, llm)
-    rag_pipeline = RAGPipeline(
-        retriever = retriever,
-        llm = ai_model
-    ) 
+    rag_pipeline = RAGPipeline(retriever=retriever, llm=ai_model)
 
     # 6. loop: prompt the user for a question, print pipeline.ask(question), repeat
 
     while True:
         users_question = input("\nask a question to AI: \n\n")
-                               
+
         if users_question.lower() in ["bye", "exit", "quit"]:
             print("\nexiting session. Bye...\n")
             break
-        else:
-            ai_response = rag_pipeline.ask(users_question)
-            print("\n"+ai_response)
-        
+        ai_response = rag_pipeline.ask(users_question)
+        print("\n" + ai_response)
 
 
 if __name__ == "__main__":
