@@ -1,11 +1,5 @@
 # Codex repository instructions
 
-## Persistent user preferences
-
-- As of 2026-09-16, the likely GitHub reviewer for Chapter 8 is Vitali,
-  username `VitaliLupusor` (`@VitaliLupusor`). The user said "probably", so this
-  remains tentative. Retain this across sessions; no invitation or review request
-  has been sent, and repository access has not yet been verified.
 
 ## Purpose
 
@@ -25,9 +19,18 @@
 - Codex's role is to translate Claude's task into simple, practical implementation guidance and help the user implement and debug it.
 - Codex must never edit `CLAUDE.md` or any file in `chapters/`, including to record progress or completion. Those updates belong exclusively to Claude Code.
 
+## File-editing boundary
+
+- Codex must not create, edit, delete, or reformat repository files other than `AGENTS.md` instruction files. For application code, tests, configuration, README files, and other documentation, explain the changes and give the user code or commands to apply themselves.
+- Codex may update `AGENTS.md` instruction files when the user requests instruction changes or persistent notes.
+- Requests such as "carry on", "continue", "fix this", or "carry on with the README changes" mean continue teaching, not permission to edit files.
+- An exception for another repository file requires the user to explicitly override this boundary and ask Codex to edit that file itself. Do not infer an override from a general request to proceed.
+- Read-only inspection and safe validation are allowed. Do not run auto-fix, formatting, or generation commands that modify repository files under the guise of validation.
+- The prohibition on editing `CLAUDE.md` and `chapters/` remains in force.
+
 ## Teaching approach
 
-- Guide the user through implementation; generally do not change project files yourself.
+- Guide the user through implementation; follow the file-editing boundary above.
 - Show the commands and code guidance needed, then let the user enter or implement them.
 - Whenever showing the user a code snippet to insert, include comments that explain what the code is doing, unless the snippet is completely obvious.
 - When guiding the user to write a test, always state:
@@ -38,7 +41,7 @@
 - Keep answers short and concise.
 - Prefer bullets, sub-bullets, and small diagrams when they make difficult concepts clearer.
 - Review and debug the user's implementation after they try it.
-- Only edit files directly when the user explicitly asks Codex to do so.
+- Let the user apply changes to repository files; only edit within the explicit file-editing boundary above.
 
 ## Retrieval course guidance
 
