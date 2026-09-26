@@ -1,24 +1,25 @@
+from typing import cast
+
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import (
     RunnableLambda,
     RunnableParallel,
     RunnablePassthrough,
+    RunnableSequence,
 )
 from langchain_openai import ChatOpenAI
 
 from rag_demo.formatting import format_docs
 
 
-class RAGPipeline: 
+class RAGPipeline:
     def __init__(self, retriever, llm: ChatOpenAI):
         """Assemble the query-time RAG Chain"""
         # Build the prompt you already tested
 
         prompt = ChatPromptTemplate.from_template(
-
-            """
-            only answer the question from the retrieved context. 
+            """only answer the question from the retrieved context.
             If the answer is not contained, simply state that you don't know.
             Don't use any outside knowledge.
 
@@ -28,36 +29,26 @@ class RAGPipeline:
 
 
             Question:
-            {question}
-            """ 
+            {question}"""
         )
 
         # Build:
         # retriever -> format_docs
         self.context_chain = retriever | RunnableLambda(format_docs)
 
-        # Build
-        # {
-        #   "context": formatted retrieval branch,
-        #   "question": unchanged question branch
-        # }
-        # connect:
-        #parallel -> prompt -> llm -> string parser
-
-        self.chain = RunnableParallel(
-            context = self.context_chain,
-            question = RunnablePassthrough()
-        ) | prompt | llm | StrOutputParser()
-
-        
+        self.chain = (
+            RunnableParallel(context=self.context_chain, question=RunnablePassthrough())
+            | prompt
+            | llm
+            | StrOutputParser()
+        )
 
     def ask(self, question: str) -> str:
         """Run one question through the assembled chain."""
-        #Invoke self.chain using question
+        # Invoke self.chain using question
 
-        answer_from_ai = self.chain.invoke(question)
+        return self.chain.invoke(question)
 
-        return answer_from_ai
 
 if __name__ == "__main__":
     # Test running everything end to end
@@ -69,7 +60,7 @@ if __name__ == "__main__":
     from rag_demo.knowledge_base import KnowledgeBase
 
     load_dotenv()
-        
+
     kb = KnowledgeBase()
 
     kb.build_index("data")
@@ -79,10 +70,9 @@ if __name__ == "__main__":
     llm_model = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
     rag_pipeline = RAGPipeline(
-        retriever = retriever,
-        llm = llm_model,
+        retriever=retriever,
+        llm=llm_model,
     )
-
 
     ai_response = rag_pipeline.ask("Who was Ada Lovelace?")
 
@@ -91,17 +81,17 @@ if __name__ == "__main__":
     print("ai_response = ")
     print(ai_response)
 
-    print("="*50, "\n")
+    print("=" * 50, "\n")
 
-    steps = rag_pipeline.chain.steps
+    steps = cast("RunnableSequence", rag_pipeline.chain).steps
 
     print(f"len(steps) = {len(steps)}")
 
-    pprint(f"type of each step = \n{ [type(step) for step in steps] }")
+    pprint(f"type of each step = \n{[type(step) for step in steps]}")
 
     question_2 = "What is Crispr?"
 
-    ## Stage 1 - create a parallel - 
+    ## Stage 1 - create a parallel -
     # get context retriever
     # pass through question as a standalone by itself
     stage1 = steps[0].invoke(question_2)

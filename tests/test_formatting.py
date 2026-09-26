@@ -12,4 +12,3 @@ def test_format_docs_joins_page_content():
     result = format_docs(documents)
 
     assert result == "First document\n\nSecond document"
-

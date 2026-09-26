@@ -12,21 +12,12 @@ def load_documents(folder_path: str) -> list[Document]:
 
     folder = Path(folder_path)
 
-    documents = []
-
-    # print(f"loading files from /{folder}")
-
     files = folder.glob("*.txt")
 
-    for file in files:
-        documents.append(
-            Document(
-                page_content=file.read_text(),
-                metadata={"source": file.name}
-            )
-        )
+    return [
+        Document(page_content=file.read_text(), metadata={"source": file.name}) for file in files
+    ]
 
-    return documents
 
 if __name__ == "__main__":
     docs = load_documents("data")

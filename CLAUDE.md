@@ -348,32 +348,82 @@ needing this conversation. Keep those files in sync if a chapter's guidance chan
       (not the user's own account — proof this was a genuine automated WIF deploy, not a
       manual one); live `/health` → `{"status":"ok"}` and live `/query` (Ada Lovelace)
       both hit fresh and correct. **Chapter 6 complete — no further stages within it.**
-- [ ] **Chapter 7 — Real feature via the workflow (TAUGHT 2026-09-03, awaiting
-      implementation)**: dense/sparse/hybrid retrieval, built entirely through branch →
-      PR → CI → merge → CD (no direct pushes to `main`).
-      `chapters/chapter-07-hybrid-retrieval.md` written, **design revised same day before
-      implementation started** — user asked (working with Codex in parallel) for explicit
-      flags for all three strategies, not hybrid-only as originally taught. Scope
+- [x] **Chapter 7 — Real feature via the workflow (COMPLETE 2026-09-12)**: dense/sparse/hybrid
+      retrieval, built entirely through branch → PR → CI → merge → CD (no direct pushes to
+      `main`). `chapters/chapter-07-hybrid-retrieval.md` written 2026-09-03, **design revised
+      same day before implementation started** — user asked (working with Codex in parallel)
+      for explicit flags for all three strategies, not hybrid-only as originally taught. Scope
       question resolved via `AskUserQuestion`: flag lives on `KnowledgeBase` only
       (`main.py`/`api.py` unchanged) — CLI/API-level exposure considered and deliberately
-      deferred to keep this chapter's surface matched to the branch→PR→CI→CD process
-      being taught. New deps identified and verified to resolve cleanly against the
-      pinned `langchain==1.3.15`: `langchain-classic` (`EnsembleRetriever`),
-      `langchain-community` (`BM25Retriever`), `rank-bm25` (BM25 scoring itself) — the
-      original course plan only anticipated `rank_bm25`; the other two are needed because
-      this project uses LangChain's newer modular v1 package split. Code change:
-      `KnowledgeBase.build_index` stores `self.chunks` (currently a local var, discarded
-      after building the vector store); `KnowledgeBase.as_retriever(k, mode="hybrid")`
-      gains a `mode` flag (`"dense"` / `"sparse"` / `"hybrid"`, default `"hybrid"` so
-      existing callers are unaffected), validates it (`ValueError` on anything else),
-      builds only what the requested mode needs, and only constructs the
-      `EnsembleRetriever` (equal 0.5/0.5 weights to start) for `"hybrid"`. Same
-      return-type contract regardless of mode, so `RAGPipeline`/`api.py`/`main.py` need
-      zero changes. Tests: extend (not duplicate) `tests/test_knowledge_base.py` — one
-      test per mode plus an invalid-mode `pytest.raises(ValueError)` case. Nothing
-      implemented or run yet.
-- [ ] **Chapter 8 — Quality/review/docs**: real `ruff` config, branch protection + required
-      reviewers (Barry/Vitali), optional Makefile, full README rewrite. Not started.
+      deferred to keep this chapter's surface matched to the branch→PR→CI→CD process being
+      taught. New deps identified and verified to resolve cleanly against the pinned
+      `langchain==1.3.15`: `langchain-classic` (`EnsembleRetriever`), `langchain-community`
+      (`BM25Retriever`), `rank-bm25` (BM25 scoring itself) — the original course plan only
+      anticipated `rank_bm25`; the other two are needed because this project uses LangChain's
+      newer modular v1 package split.
+      **Implemented and independently verified 2026-09-12** via branch `hybrid-retrieval` → PR
+      #6 → CI → squash-merge → CD, matching the taught process exactly:
+      - Code (`src/rag_demo/knowledge_base.py`, read in full): `build_index` now stores
+        `self.chunks` on the instance (previously a local var discarded after building the
+        vector store); `as_retriever(k, mode="hybrid")` validates `mode` against
+        `{"dense", "sparse", "hybrid"}` (raises `ValueError` with a clear message otherwise),
+        builds only the retriever(s) the requested mode needs, and returns an
+        `EnsembleRetriever(retrievers=[dense, sparse], weights=[0.5, 0.5])` for `"hybrid"`.
+        Same return-type contract regardless of mode — `RAGPipeline`/`api.py`/`main.py`
+        needed zero changes, as designed.
+      - Tests (`tests/test_knowledge_base.py`, read in full): one real integration test per
+        mode (dense → Ada Lovelace query, sparse → BM25 exact-phrase "Bernoulli numbers" query,
+        hybrid → "Great Red Spot" → Jupiter doc) plus `test_retriever_rejects_invalid_mode`
+        (`pytest.raises(ValueError, match=...)`). Ran the full suite locally
+        (`uv run pytest -v`): all 7 tests pass (the 3 pre-existing plus these 4), 71.7s. One
+        harmless `DeprecationWarning` noted (`langchain_community.retrievers.BM25Retriever` —
+        `langchain-community` is being sunset in favor of standalone integration packages);
+        cosmetic, not a correctness issue, not acted on.
+      - Process: PR #6 (`hybrid-retrieval` → `main`), merged `76dd60d` — confirmed via
+        `gh pr view 6` (`state: MERGED`). CI run `34704316081` on the feature branch: `success`.
+        CD run `34704662608` on `main` post-merge: `success` — confirmed via `gh run view`,
+        not just the user's report.
+      - Deployment: confirmed via `gcloud run revisions describe` that revision
+        `rag-demo-api-00006-7hz` is `Ready: True` and carries 100% of traffic (`gcloud run
+        services describe`), and hit the live URL directly — `GET /health` →
+        `{"status":"ok"}`.
+      **Chapter 7 complete.**
+- [ ] **Chapter 8 — Quality/review/docs (Step 1 IN PROGRESS, real PR review cycle;
+      Steps 2-4 not started)**: real `ruff` config, branch protection + required
+      reviewers (Barry/Vitali), optional Makefile, full README rewrite.
+      `chapters/chapter-08-quality-review-docs.md` written 2026-09-12 — final chapter of
+      the CI/CD course. **Diverged from the original taught skeleton starting
+      2026-09-21**: PR #7 ("Configure Ruff code quality checks") opened for Step 1, and
+      **Vitali (`VitaliLupusor` — confirmed real via his actual GitHub review, no longer
+      the tentative note from 2026-09-16) requested changes**: no formatter check, too
+      narrow a linter rule set, no static type checker at all. Addressed all three,
+      independently verified (not just user report):
+      - Formatter (`ruff format`) applied repo-wide (9 files, purely cosmetic — confirmed
+        via `ruff check .`/`pytest` unaffected) + a `Format check` CI step.
+      - Linter broadened from 5 to ~28 rule categories (Vitali's suggested list, minus
+        `T20`/`ANN` — deliberately deferred, see below — and `DOC`, which does nothing
+        without ruff's preview mode). Real findings fixed in code (not suppressed):
+        unnecessary pre-return assignments, dead commented-out code, a manual loop → list
+        comprehension, a `global` statement, a long inline exception message, whitespace
+        inside string literals. `tests/*` per-file-ignores extended to `S101`, `PLR2004`,
+        `ARG001` — all three are real false positives specific to how tests are written.
+      - `mypy` added (new dev dependency) with a minimal config
+        (`exclude = ["^models/"]` — mypy, unlike ruff, doesn't auto-skip
+        `.gitignore`'d paths, so it was type-checking the vendored embedding model's own
+        training script until excluded). One real finding fixed via
+        `typing.cast(RunnableSequence, rag_pipeline.chain).steps` in `pipeline.py`
+        (LangChain's `|` operator returns a broader type than what's actually built at
+        runtime). CI gained a `Type check` step. `uv run mypy .` passes clean.
+      - **Explicit decision with the user**: merge this scope now rather than also
+        annotating the whole codebase for `ANN` in the same PR (smaller, more reviewable
+        diff). Follow-up steps for if Vitali re-rejects over missing annotations are
+        written into `chapters/chapter-08-quality-review-docs.md`'s "Codex follow-up"
+        section — not started, only to be picked up if actually requested in review.
+      - Verified before pushing: `uv run ruff check .`, `uv run ruff format --check .`,
+        `uv run mypy .`, `uv run pytest` (7 tests) all pass.
+      **Open item, still not resolved**: Barry's GitHub username still isn't known —
+      needed before Step 2 (required reviewers/`CODEOWNERS`); don't guess it. Steps 2-4
+      (branch protection, optional Makefile, README rewrite) not started.
 
 ## Key design decisions already made (don't re-litigate without reason)
 
@@ -519,6 +569,71 @@ needing this conversation. Keep those files in sync if a chapter's guidance chan
   mode="hybrid")` now validates `mode` and only builds the retriever(s) the requested
   mode needs; tests extended to one-per-mode plus an invalid-mode `ValueError` case.
   Still nothing implemented — this was a chapter-file/spec revision only.
+- **2026-09-12**: Chapter 7 implemented (with Codex) and merged — branch `hybrid-retrieval` →
+  PR #6 → CI → squash-merge (`76dd60d`) → CD, following the taught branch→PR→CI→CD process
+  exactly. Independently verified rather than taken on report: read `knowledge_base.py` in
+  full (matches the revised design — `self.chunks` retained, `as_retriever(k, mode=...)`
+  validates and builds only what's needed, `EnsembleRetriever` 0.5/0.5 for hybrid) and
+  `tests/test_knowledge_base.py` in full (one integration test per mode + invalid-mode
+  `ValueError` case); ran `uv run pytest -v` locally, all 7 tests pass; confirmed via
+  `gh pr view 6`/`gh run view` that PR #6 is merged and both the CI run (feature branch) and
+  CD run (main, post-merge) succeeded; confirmed via `gcloud run revisions describe`/
+  `services describe` that revision `rag-demo-api-00006-7hz` is `Ready` and serving 100%
+  traffic, and hit the live `/health` endpoint directly. **Chapter 7 complete.** Only
+  Chapter 8 (quality/review/docs) remains in the CI/CD course; not started. Later the same
+  day, user asked to write the Chapter 8 file ahead of actually starting it (won't be
+  worked on yet). Checked real repo state first rather than writing from the course plan
+  alone: `ruff` already a dev dep with CI already running `ruff check .` on bare defaults
+  (no `[tool.ruff]` config); confirmed via `gh api .../branches/main/protection` → `404`
+  that no branch protection exists; read the current `README.md` (covers setup/run/test/
+  endpoints/CLI, missing branch workflow/CI/CD/post-merge sections). Wrote
+  `chapters/chapter-08-quality-review-docs.md` — real `ruff` rule-category config,
+  branch protection + `CODEOWNERS` via `gh api`, optional Makefile, README extension —
+  flagging one real open item rather than guessing: Barry's and Vitali's GitHub usernames
+  are still unknown, needed before Step 2 can actually be finished. This is the final
+  chapter of the CI/CD course. Nothing implemented — file-only, per the user's request.
+- **2026-09-21/22**: Real Chapter 8 Step 1 work, triggered by an actual PR review rather
+  than the original taught skeleton. PR #7 ("Configure Ruff code quality checks") had
+  been opened (with Codex, in parallel) against the smaller original Step 1 plan; **Vitali
+  (`VitaliLupusor`) left a real "Changes requested" review** — confirmed via `gh api
+  repos/mr-j-sinclair/rag-demo/pulls/7/reviews`, not assumed — citing no formatter check,
+  too narrow a linter, and no type checker at all. Walked the user through all three,
+  beginner-paced, one concept at a time: (1) **formatter** — explained `ruff format` vs.
+  `ruff format --check` and why CI must use the check-only form (a CI runner's rewrites
+  are thrown away with the runner); user ran `ruff format .` (9 files reformatted) and
+  added a `Format check` CI step. (2) **linter** — ran Vitali's full ~30-category
+  suggestion as a one-off diagnostic (not saved) to measure real impact before deciding:
+  found `T20`/`print()` (44 hits — false positives, this is an intentional-debug-output
+  CLI app) and `ANN`/annotations (22 hits — deliberately deferred to pair with mypy) were
+  the dominant, mostly-noise buckets; recommended adopting everything else now. User
+  implemented the resulting `select` list plus a `tests/*` per-file-ignore for
+  `S101`/`PLR2004`/`ARG001` (real false positives specific to test code), then fixed the
+  ~14 real remaining findings (unnecessary pre-return assignments, dead commented code, a
+  loop→comprehension rewrite, a `global` statement judgment call, a long inline exception
+  message, whitespace inside string literals the formatter can't reach) — including
+  catching two real learning moments along the way: a misplaced `# noqa: TRY003` that
+  silently did nothing (noqa suppresses only the line mypy/ruff *reports*, not wherever
+  it's visually placed on a multi-line statement) and a `&&`-chained shell command that
+  silently skipped `ruff format .` because `ruff check --fix` had already exited non-zero.
+  (3) **mypy** — explained static typing vs. Python's runtime dynamic typing from
+  scratch; user added it as a dev dependency with a minimal config. First real run
+  surfaced 10 of 11 errors from `models/all-MiniLM-L6-v2/train_script.py` — the vendored,
+  gitignored embedding model, not the user's code — which led to a genuinely useful
+  discovery: `ruff check .` silently respects `.gitignore` by default, mypy does not;
+  fixed via `exclude = ["^models/"]`. The one real remaining finding
+  (`pipeline.py`'s Phase-7 `rag_pipeline.chain.steps` inspection code) was fixed with
+  `typing.cast(RunnableSequence, rag_pipeline.chain).steps`, explained as "changes what
+  mypy believes, never what runs" — user explicitly chose this over a blanket `# type:
+  ignore`, reasoning that Vitali would be reviewing it again. Explicit scope decision made
+  with the user: merge now with `ANN` still deferred, rather than also annotating the
+  whole codebase in this PR; follow-up steps written into
+  `chapters/chapter-08-quality-review-docs.md`'s new "Codex follow-up" section, gated on
+  Vitali actually re-requesting it in the next review round (not to be started
+  preemptively). Verified before pushing: `ruff check .`, `ruff format --check .`,
+  `mypy .`, `pytest` (7 tests) all pass. `CLAUDE.md` and
+  `chapters/chapter-08-quality-review-docs.md` both updated same-session per this file's
+  own standing instructions (not deferred). Committed and pushed to `quality-review-docs`
+  (PR #7) for Vitali's re-review — see git log for the exact commit.
 
 ## Resuming a session
 

@@ -11,9 +11,7 @@ def test_ask_uses_context_and_returns_llm_response():
 
     def retrieve_documents(question):
         # Return predictable dummy data instead of searching a real vector store
-        return [
-            Document(page_content="Ada Lovelace was an early computing pioneer.")
-        ]
+        return [Document(page_content="Ada Lovelace was an early computing pioneer.")]
 
     def return_stub_response(prompt):
         # Record the real prompt constructed by RAG Pipleline
@@ -28,21 +26,19 @@ def test_ask_uses_context_and_returns_llm_response():
 
     ## Create a RAGPipeline object using the stub calls
     pipeline = RAGPipeline(
-        retriever = stub_retriever,
-        llm = stub_llm,
+        retriever=stub_retriever,
+        llm=stub_llm,
     )
 
     result = pipeline.ask("Who was Ada Lovelace?")
 
-    # Confirm the output parser returned the sub message as a string 
+    # Confirm the output parser returned the sub message as a string
     assert result == "Ada Lovelace was a computing pioneer"
 
     # Confirm the prompt contained both the context and question
 
-        # Context
+    # Context
     assert "Ada Lovelace was an early computing pioneer." in received_prompts[0]
 
-        # (users) Question
+    # (users) Question
     assert "Who was Ada Lovelace?" in received_prompts[0]
-
-     

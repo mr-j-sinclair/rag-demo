@@ -45,6 +45,13 @@ jobs:
         # Check all Python files for code-quality problems.
         run: uv run ruff check .
 
+      - name: Format check
+        # Check formatting without modifying any files.
+        run: uv run ruff format --check .
+
+      - name: Type check
+        run: uv run mypy .
+
       - name: Run tests
         # Run the project's automated test suite
         run: uv run pytest
