@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from dotenv import find_dotenv, load_dotenv
-from fastapi import FastAPI, HTTPException, UploadFile
+from fastapi import FastAPI, HTTPException, UploadFile, status
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 
@@ -82,11 +82,13 @@ async def upload_documents(file: UploadFile):
 
     # Reject empty or suspicious file names
     if not filename or filename in (".", "..", "..."):
-        raise HTTPException(status_code=400, detail="Invalid filename")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid filename")
 
     # Check that it's suffix is ".txt"
     if not filename.lower().endswith(".txt"):
-        raise HTTPException(status_code=400, detail="Only .txt files are allowed")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Only .txt files are allowed"
+        )
 
     # Read the uploaded bytes
     contents = await file.read()
@@ -124,7 +126,7 @@ def delete_document(passed_in_filename: str):
 
     if filename != passed_in_filename:
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail=(
                 f"invalid filename '{passed_in_filename}'. "
                 "Use a plain filename like 'example_file.txt'"
@@ -133,18 +135,21 @@ def delete_document(passed_in_filename: str):
 
     # Reject empty or suspicious file names
     if not filename or filename in (".", "..", "..."):
-        raise HTTPException(status_code=400, detail="Invalid filename")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid filename")
 
     # Check that it's suffix is ".txt"
     if not filename.lower().endswith(".txt"):
-        raise HTTPException(status_code=400, detail="You can only delete .txt files")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="You can only delete .txt files"
+        )
 
     # Build the target path inside /data
     target = Path("data") / filename
     # If target.is_file() is False, raise HTTP 404.
     if not target.is_file():
         raise HTTPException(
-            status_code=404, detail=f"That file '{filename}' doesn't exist on the server"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"That file '{filename}' doesn't exist on the server",
         )
 
     # Delete it using target.unlink
