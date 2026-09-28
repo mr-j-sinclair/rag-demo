@@ -103,7 +103,7 @@ The workflow:
 - Restores the embedding model from cache or downloads it if needed.
 - Runs `uv run ruff check .` to check code quality.
 - Runs `uv run ruff format --check .` to check formatting without modifying files.
-- Runs `uv run mypy .` to check for type errors without running the application.
+- Runs `uv run ty check` to check for type errors without running the application.
 - Runs `uv run pytest` to check application behaviour.
 
 The required `test` check must pass before a pull request can merge.
@@ -113,7 +113,7 @@ Run the same checks locally before pushing:
 ```bash
 uv run ruff check .
 uv run ruff format --check .
-uv run mypy .
+uv run ty check
 uv run pytest
 ```
 

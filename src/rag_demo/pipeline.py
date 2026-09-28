@@ -1,4 +1,4 @@
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
@@ -12,9 +12,13 @@ from langchain_openai import ChatOpenAI
 
 from rag_demo.formatting import format_docs
 
+if TYPE_CHECKING:
+    # Only needed for Type checkers, not when the application runs
+    from langchain_core.language_models.base import LanguageModelLike
+
 
 class RAGPipeline:
-    def __init__(self, retriever, llm: ChatOpenAI):
+    def __init__(self, retriever, llm: "LanguageModelLike"):
         """Assemble the query-time RAG Chain"""
         # Build the prompt you already tested
 

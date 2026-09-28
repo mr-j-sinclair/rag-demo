@@ -29,9 +29,9 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
-    "mypy>=2.3.1",
     "pytest>=9.1.1",
     "ruff>=0.16.4",
+    "ty>=0.0.84",
 ]
 
 # Ensure Cloud Run (on Linux) downloads only the smaller CPU-only PyTorch build
@@ -93,7 +93,7 @@ select = [
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101", "PLR2004", "ARG001"] # assert is how pytests tests are written, not a bug
 
-[tool.mypy]
-python_version = "3.11"
-exclude = ["^models/"]
-# TODO: As this is first pass, we'll start permissive, then tighten up later
+
+[tool.ty.src]
+# Downloaded model files are not application code we maintain.
+exclude = ["models/"]
