@@ -388,9 +388,10 @@ needing this conversation. Keep those files in sync if a chapter's guidance chan
         services describe`), and hit the live URL directly — `GET /health` →
         `{"status":"ok"}`.
       **Chapter 7 complete.**
-- [ ] **Chapter 8 — Quality/review/docs (Step 1 IN PROGRESS, real PR review cycle;
-      Steps 2-4 not started)**: real `ruff` config, branch protection + required
-      reviewers (Barry/Vitali), optional Makefile, full README rewrite.
+- [x] **Chapter 8 — Quality/review/docs (COMPLETE 2026-09-30, one optional demo
+      outstanding — see "Final verification" at the end of this entry)**: real `ruff`
+      config, branch protection + required reviewers, optional Makefile, full README rewrite.
+      (History of the Step 1 review cycle below, kept for the record.)
       `chapters/chapter-08-quality-review-docs.md` written 2026-09-12 — final chapter of
       the CI/CD course. **Diverged from the original taught skeleton starting
       2026-09-21**: PR #7 ("Configure Ruff code quality checks") opened for Step 1, and
@@ -424,6 +425,36 @@ needing this conversation. Keep those files in sync if a chapter's guidance chan
       **Open item, still not resolved**: Barry's GitHub username still isn't known —
       needed before Step 2 (required reviewers/`CODEOWNERS`); don't guess it. Steps 2-4
       (branch protection, optional Makefile, README rewrite) not started.
+      **Final verification (2026-09-30, independently checked, not user report)**:
+      - PR #7: Vitali `CHANGES_REQUESTED` (09-19) → approved (09-25, both his accounts
+        `VitaliLupusor` + `vitali-lupusor-cognizant`) → merged `d4d4a0a` (09-26). His 4
+        inline comments were all resolved across PR #7 + PR #9: broader lint list (#7),
+        `mypy` → `ty` (#9), `fastapi.status.HTTP_4xx` constants instead of literals (#9),
+        "Persistent user preferences" section removed from `AGENTS.md` (#9). So the initial
+        rejection is closed out, not an open item. `ANN` was never re-requested — the
+        "Codex follow-up" in the chapter file was correctly never started.
+      - PR #8 (README contribution/CI/CD docs) merged `7d4ca91`; PR #9 ("Update CI
+        documentation, migrate to ty, and clarify HTTP status codes") approved by Vitali
+        (both accounts, 09-28), merged `ff7212b` (09-30). Post-merge CI `36684852896` and
+        CD `36684852996` both `success`.
+      - Deploy: revision `rag-demo-api-00009-7f4` serving 100%, created by
+        `github-deployer@...` (automated WIF deploy); live `/health` OK and `/query` (Ada
+        Lovelace) returns a correct grounded answer.
+      - Local: `ruff check .`, `ruff format --check .`, `ty check` all pass.
+      - Branch protection on `main` (via `gh api .../branches/main/protection`): required
+        status check `test` (strict/up-to-date), 1 approving review, stale approvals
+        dismissed, `enforce_admins: true` (applies to the repo owner too), force-push and
+        deletion disabled.
+      - Deviations from the taught skeleton, both deliberate and documented in README:
+        no `CODEOWNERS` (`require_code_owner_reviews: false`; reviews requested manually;
+        Barry never became a reviewer — Vitali was the only real reviewer), and no
+        Makefile ("This project does not use a Makefile").
+      - `update-documentation` branch deleted locally + remotely. Stale leftovers, harmless:
+        local `create_cd`/`fix-cd-log-streaming`, remote `chore/sync-course-metadata`,
+        `ci_setup`, `create_cd`, `fix-cd-log-streaming`, `readme-change-fastapi`.
+      - **Only outstanding item (optional demo, config already proven via API)**: the
+        chapter's "direct push to `main` is rejected" demonstration hasn't been run live.
+        Commands are in the chapter file's "Completion" section.
 
 ## Key design decisions already made (don't re-litigate without reason)
 
@@ -635,10 +666,21 @@ needing this conversation. Keep those files in sync if a chapter's guidance chan
   own standing instructions (not deferred). Committed and pushed to `quality-review-docs`
   (PR #7) for Vitali's re-review — see git log for the exact commit.
 
+- **2026-09-30**: Chapter 8 final verification. User reported PR #9 approved + merged,
+  post-merge CI/CD green, `/query` tested live, feature branch deleted. Independently
+  re-verified all of it (see Chapter 8 "Final verification" block): PR #7/#9 review history
+  via `gh api`, all 4 of Vitali's PR #7 inline comments confirmed resolved, CI/CD runs,
+  Cloud Run revision `00009` deployed by `github-deployer`, live `/health` + `/query`,
+  local ruff/format/ty clean, branch protection rule read back from the API. **Chapter 8
+  and the CI/CD course are complete**; only the optional live "rejected direct push" demo
+  remains un-run. Later same day: user deleted all stale branches — confirmed only `main`
+  remains locally and on `origin`, no open PRs.
+
 ## Resuming a session
 
-**Two courses exist in this file — check which one is active first** (currently: COURSE 2/CI-CD,
-since COURSE COMPLETE marks the RAG course finished).
+**Two courses exist in this file — both are now complete** (RAG course 2026-08-20; CI/CD course
+2026-09-30, bar the optional rejected-push demo in Chapter 8). No required next step — ask the
+user what they want to do next.
 
 1. Check the active course's checkbox list (RAG course: "Progress against the plan"; CI/CD course:
    "COURSE 2" section) to see the last completed step.
