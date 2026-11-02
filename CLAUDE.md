@@ -676,6 +676,21 @@ needing this conversation. Keep those files in sync if a chapter's guidance chan
   remains un-run. Later same day: user deleted all stale branches — confirmed only `main`
   remains locally and on `origin`, no open PRs.
 
+- **2026-11-02**: Post-course infra change (not a lesson), from a GCP cost audit. Artifact
+  Registry held 11 stale ~1.24 GB images (£0.89 in Oct); cleaned up + cleanup policy added
+  (delete untagged >1d, keep most recent 1). Then, at the user's request (Option A, chosen
+  over a selective bake): removed the Dockerfile's `hf download` step, which pulled the
+  *whole* HF repo (870 MB layer: onnx/openvino/tf/rust/.bin). The app now downloads only the
+  ~90 MB it needs from the HF Hub at cold start (`KnowledgeBase` already used the Hub id, so
+  no Python change). Supersedes Chapter 5's bake-at-build decision. Verified: pytest 7/7;
+  candidate image 395 MB (was 1,260 MB); no-traffic revision `rag-demo-api-00011-sir` (tag
+  `candidate`) started in ~63 s, `/health` 200, peak memory 76% of 1 GiB (was 74%). `/query`
+  returns 500 on BOTH candidate and production: OpenAI 401 invalid key — pre-existing, the
+  `OPENAI_API_KEY` GitHub secret (set 2026-08-28) needs rotating. Not yet committed/PR'd.
+  After CD deploys the merge, traffic must be promoted with
+  `gcloud run services update-traffic rag-demo-api --to-latest` (the `--no-traffic` candidate
+  deploy pins traffic), then remove the `candidate` tag/revision/image tag.
+
 ## Resuming a session
 
 **Two courses exist in this file — both are now complete** (RAG course 2026-08-20; CI/CD course
