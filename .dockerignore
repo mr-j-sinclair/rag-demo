@@ -22,7 +22,7 @@ ignore.md
 .env
 .env.*
 
-# Exclude the large local model; the Dockerfile downloads its own copy.
+# Exclude the large local model; the app downloads its own copy from the Hugging Face Hub at startup.
 models/
 
 # macOS metadata.

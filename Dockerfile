@@ -22,9 +22,10 @@ COPY . /app
 # Install the project itself now that its source code exists.
 RUN uv sync --locked --no-dev
 
-# Download and cache the embedding model inside the image.
-# Cloud Run will therefore not need the models/ folder from this Mac.
-RUN uv run hf download sentence-transformers/all-MiniLM-L6-v2
+# The embedding model is NOT baked into the image, to keep it small and reduce
+# Artifact Registry storage costs. KnowledgeBase loads it by its Hugging Face Hub id,
+# so each cold-started instance downloads only the files it needs (~90 MB) on startup
+# (observed cold start: ~1 minute, including indexing).
 
 # Make commands installed in the virtual environment directly available.
 ENV PATH="/app/.venv/bin:$PATH"
